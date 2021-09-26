@@ -170,7 +170,7 @@ int main() {
 
 	Shader* shader = new Shader();
 	shader->LoadShaderPartFromFile("shaders/vertex_shader.glsl", ShaderPartType::Vertex);
-	shader->LoadShaderPartFromFile("shaders/frag_shader.glsl", ShaderPartType::Fragment);
+	shader->LoadShaderPartFromFile("shaders/frag_shader2.glsl", ShaderPartType::Fragment);
 	shader->Link();
 
 	// GL states
