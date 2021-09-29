@@ -116,7 +116,7 @@ int main() {
 
 	static const GLfloat points[] = {
 		-0.5f, -0.5f, 0.5f,
-		0.5f, -0.5f, 0.5f,
+		1.0f, -1.0f, 1.5f,
 		-0.5f, 0.5f, 0.5f
 	};
 
@@ -170,8 +170,13 @@ int main() {
 
 	Shader* shader = new Shader();
 	shader->LoadShaderPartFromFile("shaders/vertex_shader.glsl", ShaderPartType::Vertex);
-	shader->LoadShaderPartFromFile("shaders/frag_shader2.glsl", ShaderPartType::Fragment);
+	shader->LoadShaderPartFromFile("shaders/frag_shader.glsl", ShaderPartType::Fragment);
 	shader->Link();
+
+	Shader* shader2 = new Shader();
+	shader2->LoadShaderPartFromFile("shaders/vertex_shader.glsl", ShaderPartType::Vertex);
+	shader2->LoadShaderPartFromFile("shaders/frag_shader2.glsl", ShaderPartType::Fragment);
+	shader2->Link();
 
 	// GL states
 	glEnable(GL_DEPTH_TEST);
@@ -195,6 +200,8 @@ int main() {
 		shader->Bind();
 		vao->Bind();
 		glDrawArrays(GL_TRIANGLES, 0, 3);
+
+		shader2->Bind();
 
 		vao2->Bind();
 		glDrawElements(GL_TRIANGLES, (GLenum)interleaved_ibo->GetElementCount(), (GLenum)interleaved_ibo->GetElementType(), nullptr);
