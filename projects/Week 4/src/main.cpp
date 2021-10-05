@@ -57,7 +57,7 @@ GLFWwindow* window;
 // The current size of our window in pixels
 glm::ivec2 windowSize = glm::ivec2(800, 800);
 // The title of our GLFW window
-std::string windowTitle = "INFR-1350U";
+std::string windowTitle = "Car (Carolyn) Wong";
 
 void GlfwWindowResizedCallback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
@@ -117,13 +117,13 @@ int main() {
 	static const GLfloat points[] = {
 		-0.5f, -0.5f, 0.5f,
 		0.5f, -0.5f, 0.5f,
-		-0.5f, 0.5f, 0.5f
+		-0.5f, 0.5f, 0.5f,
 	};
 
 	static const GLfloat colors[] = {
 		1.0f, 0.0f, 0.0f,
 		0.0f, 1.0f, 0.0f,
-		0.0f, 0.0f, 1.0f
+		0.0f, 0.0f, 1.0f,
 	};
 
 	//VBO - Vertex buffer object
@@ -140,31 +140,61 @@ int main() {
 	vao->AddVertexBuffer(color_vbo, {
 		{ 1, 3, AttributeType::Float, 0, NULL }
 	});
-
+	
 	static const float interleaved[] = {
 		// X      Y    Z       R     G     B
 		 0.5f, -0.5f, 0.5f,   0.0f, 0.0f, 0.0f,
 		 0.5f,  0.5f, 0.5f,   0.3f, 0.2f, 0.5f,
 		-0.5f,  0.5f, 0.5f,   1.0f, 1.0f, 0.0f,
-		-0.5f, -0.5f, 0.5f,   1.0f, 1.0f, 1.0f
+		-0.5f, -0.5f, 0.5f,   1.0f, 1.0f, 1.0f,
 	};
 	VertexBuffer::Sptr interleaved_vbo = VertexBuffer::Create();
 	interleaved_vbo->LoadData(interleaved, 6 * 4);
 
 	static const uint16_t indices[] = {
 		3, 0, 1,
-		3, 1, 2
+		3, 1, 2,
+		3, 0, 1
 	};
 	IndexBuffer::Sptr interleaved_ibo = IndexBuffer::Create();
-	interleaved_ibo->LoadData(indices, 3 * 2);
+	interleaved_ibo->LoadData(indices, 3 * 3);
 
 	size_t stride = sizeof(float) * 6;
+
+	
 	VertexArrayObject::Sptr vao2 = VertexArrayObject::Create();
 	vao2->AddVertexBuffer(interleaved_vbo, {
 		BufferAttribute(0, 3, AttributeType::Float, stride, 0),
 		BufferAttribute(1, 3, AttributeType::Float, stride, sizeof(float) * 3),
 	});
 	vao2->SetIndexBuffer(interleaved_ibo);
+
+	static const GLfloat points1[] = {
+		-0.5f, -0.5f, 0.5f,
+		0.5f, -0.5f, 0.5f,
+		-0.5f, 0.5f, 0.5f,
+	};
+
+	static const GLfloat colors1[] = {
+		1.0f, 0.0f, 0.5f,
+		1.0f, 1.0f, 0.0f,
+		1.0f, 0.0f, 0.5f,
+	};
+
+	//VBO - Vertex buffer object
+	VertexBuffer::Sptr posVbo1 = VertexBuffer::Create();
+	posVbo1->LoadData(points1, 9);
+
+	VertexBuffer::Sptr color_vbo1 = VertexBuffer::Create();
+	color_vbo1->LoadData(colors1, 9);
+
+	VertexArrayObject::Sptr vao1 = VertexArrayObject::Create();
+	vao1->AddVertexBuffer(posVbo1, {
+		BufferAttribute(0, 3, AttributeType::Float, 0, NULL)
+		});
+	vao1->AddVertexBuffer(color_vbo1, {
+		{ 1, 3, AttributeType::Float, 0, NULL }
+		});
 
 	// Load our shaders
 	Shader::Sptr shader = Shader::Create();
@@ -181,13 +211,14 @@ int main() {
 	// Create a mat4 to store our mvp (for now)
 	glm::mat4 transform = glm::mat4(1.0f);
 	glm::mat4 transform2 = glm::mat4(1.0f);
+	glm::mat4 transform3 = glm::mat4(1.0f);
 
 	// Our high-precision timer
 	double lastFrame = glfwGetTime();
 
 	Camera::Sptr camera = Camera::Create();    
-	camera->SetPosition(glm::vec3(0, 1, 1));    
-	camera->LookAt(glm::vec3(0.0f));
+	camera->SetPosition(glm::vec3(1, 1, 1));    
+	camera->LookAt(glm::vec3(0.2f));
 
 	///// Game loop /////
 	while (!glfwWindowShouldClose(window)) {
@@ -199,7 +230,8 @@ int main() {
 
 		// Rotate our models around the z axis
 		transform = glm::rotate(glm::mat4(1.0f), static_cast<float>(thisFrame), glm::vec3(0, 0, 1));
-		transform2 = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0.0f, glm::sin(static_cast<float>(thisFrame))));
+		transform2 = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, glm::sin(static_cast<float>(thisFrame))));
+		transform3 = glm::translate(glm::mat4(1.0f), glm::vec3(glm::sin(static_cast<float>(thisFrame)), glm::sin(static_cast<float>(thisFrame)), -glm::sin(static_cast<float>(thisFrame))));
 
 		glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -212,16 +244,19 @@ int main() {
 
 		shader->Bind(); // This should already exist 
 		shader->SetUniformMatrix("u_ModelViewProjection", camera->GetViewProjection() * transform);
-		
 
 		vao->Bind();
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawArrays(GL_TRIANGLES, 0, 9);
 		vao->Unbind();
 
 		shader->SetUniformMatrix("u_ModelViewProjection", camera->GetViewProjection()* transform2);
 		vao2->Bind(); // this should already exist!
 		glDrawElements(GL_TRIANGLES, interleaved_ibo->GetElementCount(), (GLenum)interleaved_ibo->GetElementType(), nullptr);
 
+
+		shader->SetUniformMatrix("u_ModelViewProjection", camera->GetViewProjection()* transform3);
+		vao1->Bind();
+		glDrawArrays(GL_TRIANGLES, 0, 9);
 		VertexArrayObject::Unbind();
 
 		glfwSwapBuffers(window);

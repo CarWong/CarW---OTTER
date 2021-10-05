@@ -207,8 +207,10 @@ int main() {
 
 		keyboard();
 
+		Model = glm::translate(Model, glm::vec3(0.0f, 0.5f, 0.0f));
 		Model = glm::translate(Model, glm::vec3(0.0f, 0.0f, movZ));
 		Model = glm::rotate(Model, glm::radians(rotZ), glm::vec3(0.0f, 0.0f, 1.0f));
+		Model = glm::translate(Model, glm::vec3(0.0f, -0.5f, 0.0f));
 		mvp = Projection * View * Model;
 
 		// Send mvp to GPU
