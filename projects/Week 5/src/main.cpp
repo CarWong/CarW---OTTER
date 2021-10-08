@@ -18,6 +18,11 @@
 #include "Shader.h"
 #include "Camera.h"
 
+#include "Utils/MeshBuilder.h"
+#include "Utils/MeshFactory.h"
+#include "Utils/ObjLoader.h"
+#include "VertexTypes.h"
+
 #define LOG_GL_NOTIFICATIONS
 
 /*
@@ -57,7 +62,7 @@ GLFWwindow* window;
 // The current size of our window in pixels
 glm::ivec2 windowSize = glm::ivec2(800, 800);
 // The title of our GLFW window
-std::string windowTitle = "Car (Carolyn) Wong";
+std::string windowTitle = "Car (Carolyn) Wong - 100781520";
 
 void GlfwWindowResizedCallback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
@@ -117,13 +122,13 @@ int main() {
 	static const GLfloat points[] = {
 		-0.5f, -0.5f, 0.5f,
 		0.5f, -0.5f, 0.5f,
-		-0.5f, 0.5f, 0.5f,
+		-0.5f, 0.5f, 0.5f
 	};
 
 	static const GLfloat colors[] = {
 		1.0f, 0.0f, 0.0f,
 		0.0f, 1.0f, 0.0f,
-		0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 1.0f
 	};
 
 	//VBO - Vertex buffer object
@@ -135,79 +140,54 @@ int main() {
 
 	VertexArrayObject::Sptr vao = VertexArrayObject::Create();
 	vao->AddVertexBuffer(posVbo, {
-		BufferAttribute(0, 3, AttributeType::Float, 0, NULL)
+		BufferAttribute(0, 3, AttributeType::Float, 0, NULL, AttribUsage::Position)
 	});
 	vao->AddVertexBuffer(color_vbo, {
-		{ 1, 3, AttributeType::Float, 0, NULL }
+		{ 1, 3, AttributeType::Float, 0, NULL, AttribUsage::Color }
 	});
-	
+
 	static const float interleaved[] = {
 		// X      Y    Z       R     G     B
 		 0.5f, -0.5f, 0.5f,   0.0f, 0.0f, 0.0f,
 		 0.5f,  0.5f, 0.5f,   0.3f, 0.2f, 0.5f,
 		-0.5f,  0.5f, 0.5f,   1.0f, 1.0f, 0.0f,
-		-0.5f, -0.5f, 0.5f,   1.0f, 1.0f, 1.0f,
+		-0.5f, -0.5f, 0.5f,   1.0f, 1.0f, 1.0f
 	};
 	VertexBuffer::Sptr interleaved_vbo = VertexBuffer::Create();
 	interleaved_vbo->LoadData(interleaved, 6 * 4);
 
 	static const uint16_t indices[] = {
 		3, 0, 1,
-		3, 1, 2,
-		3, 0, 1
+		3, 1, 2
 	};
 	IndexBuffer::Sptr interleaved_ibo = IndexBuffer::Create();
-	interleaved_ibo->LoadData(indices, 3 * 3);
+	interleaved_ibo->LoadData(indices, 3 * 2);
 
 	size_t stride = sizeof(float) * 6;
-
-	
 	VertexArrayObject::Sptr vao2 = VertexArrayObject::Create();
 	vao2->AddVertexBuffer(interleaved_vbo, {
-		BufferAttribute(0, 3, AttributeType::Float, stride, 0),
-		BufferAttribute(1, 3, AttributeType::Float, stride, sizeof(float) * 3),
+		BufferAttribute(0, 3, AttributeType::Float, stride, 0, AttribUsage::Position),
+		BufferAttribute(1, 3, AttributeType::Float, stride, sizeof(float) * 3, AttribUsage::Color),
 	});
 	vao2->SetIndexBuffer(interleaved_ibo);
 
-	static const GLfloat points1[] = {
-		-0.5f, -0.5f, 0.5f,
-		0.5f, -0.5f, 0.5f,
-		-0.5f, 0.5f, 0.5f,
-	};
-
-	static const GLfloat colors1[] = {
-		1.0f, 0.0f, 0.5f,
-		1.0f, 1.0f, 0.0f,
-		1.0f, 0.0f, 0.5f,
-	};
-
-	//VBO - Vertex buffer object
-	VertexBuffer::Sptr posVbo1 = VertexBuffer::Create();
-	posVbo1->LoadData(points1, 9);
-
-	VertexBuffer::Sptr color_vbo1 = VertexBuffer::Create();
-	color_vbo1->LoadData(colors1, 9);
-
-	VertexArrayObject::Sptr vao1 = VertexArrayObject::Create();
-	vao1->AddVertexBuffer(posVbo1, {
-		BufferAttribute(0, 3, AttributeType::Float, 0, NULL)
-		});
-	vao1->AddVertexBuffer(color_vbo1, {
-		{ 1, 3, AttributeType::Float, 0, NULL }
-		});
-
 	// Load our shaders
-	Shader::Sptr shader = Shader::Create();
+	Shader* shader = new Shader();
 	shader->LoadShaderPartFromFile("shaders/vertex_shader.glsl", ShaderPartType::Vertex);
 	shader->LoadShaderPartFromFile("shaders/frag_shader.glsl", ShaderPartType::Fragment);
 	shader->Link();
 
-	// GL states
+	// GL states, we'll enable depth testing and backface fulling
 	glEnable(GL_DEPTH_TEST);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 
-	// Get uniform location for the moS view projection
-	//GLint xTransformLoc = glGetUniformLocation(shader->GetHandle(), "u_ModelViewProjection");
+	// Get uniform location for the model view projection
+	Camera::Sptr camera = Camera::Create();
+	camera->SetPosition(glm::vec3(0, 3, 3));
+	camera->LookAt(glm::vec3(0.0f));
+
 	// Create a mat4 to store our mvp (for now)
 	glm::mat4 transform = glm::mat4(1.0f);
 	glm::mat4 transform2 = glm::mat4(1.0f);
@@ -216,48 +196,69 @@ int main() {
 	// Our high-precision timer
 	double lastFrame = glfwGetTime();
 
-	Camera::Sptr camera = Camera::Create();    
-	camera->SetPosition(glm::vec3(1, 1, 1));    
-	camera->LookAt(glm::vec3(0.2f));
+	LOG_INFO("Starting mesh build");
+
+	MeshBuilder<VertexPosCol> mesh;
+	MeshFactory::AddIcoSphere(mesh, glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.5f), 3);
+	MeshFactory::AddCube(mesh, glm::vec3(0.0f), glm::vec3(0.5f));
+	VertexArrayObject::Sptr vao3 = mesh.Bake();
+
+	VertexArrayObject::Sptr vao4 = ObjLoader::LoadFromFile("Monkey.obj");
+
+	bool isRotating = true;
+
+	bool isButtonPressed = false;
 
 	///// Game loop /////
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 
+		// WEEK 5: Input handling
+		if (glfwGetKey(window, GLFW_KEY_W)) 
+		{
+			if (!isButtonPressed) 
+			{
+				// This is the action we want to perform on key press   
+				isRotating = !isRotating;    
+			}    
+			isButtonPressed = true;
+		} 
+		else 
+		{    
+			isButtonPressed = false;
+		}
+
 		// Calculate the time since our last frame (dt)
 		double thisFrame = glfwGetTime();
 		float dt = static_cast<float>(thisFrame - lastFrame);
 
-		// Rotate our models around the z axis
-		transform = glm::rotate(glm::mat4(1.0f), static_cast<float>(thisFrame), glm::vec3(0, 0, 1));
-		transform2 = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, glm::sin(static_cast<float>(thisFrame))));
-		transform3 = glm::rotate(glm::mat4(1.0f), static_cast<float>(thisFrame), glm::vec3(0, 0, 1));
-		transform3 = glm::translate(glm::mat4(1.0f), glm::vec3(glm::sin(static_cast<float>(thisFrame)), glm::sin(static_cast<float>(thisFrame)), -glm::sin(static_cast<float>(thisFrame))));
+		// TODO: Week 5 - toggle code
 
-		glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+		// Rotate our models around the z axis
+		if (isRotating) {
+			transform  = glm::rotate(glm::mat4(1.0f), static_cast<float>(thisFrame), glm::vec3(0, 0, 1));
+		}
+		transform2 = glm::rotate(glm::mat4(1.0f), -static_cast<float>(thisFrame), glm::vec3(0, 0, 1)) * glm::translate(glm::mat4(1.0f), glm::vec3(0, 0.0f, glm::sin(static_cast<float>(thisFrame))));
+		transform3 = glm::rotate(glm::mat4(1.0f), -static_cast<float>(thisFrame), glm::vec3(1, 0, 0)) * glm::translate(glm::mat4(1.0f), glm::vec3(0, glm::sin(static_cast<float>(thisFrame)), 0.0f));
+
+		// Clear the color and depth buffers
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Bind our shader and upload the uniform
-		
 		shader->Bind();
-		shader->SetUniformMatrix("u_ModelViewProjection", transform);
-		//glProgramUniformMatrix4fv(shader->GetHandle(), xTransformLoc, 1, false, glm::value_ptr(transform));
 
-		shader->Bind(); // This should already exist 
+		// Draw spinny triangle
 		shader->SetUniformMatrix("u_ModelViewProjection", camera->GetViewProjection() * transform);
+		vao->Draw();
 
-		vao->Bind();
-		glDrawArrays(GL_TRIANGLES, 0, 9);
-		vao->Unbind();
-
+		// Draw MeshFactory Sample
 		shader->SetUniformMatrix("u_ModelViewProjection", camera->GetViewProjection()* transform2);
-		vao2->Bind(); // this should already exist!
-		glDrawElements(GL_TRIANGLES, interleaved_ibo->GetElementCount(), (GLenum)interleaved_ibo->GetElementType(), nullptr);
+		vao3->Draw();
 
+		// Draw OBJ loaded model
+		shader->SetUniformMatrix("u_ModelViewProjection", camera->GetViewProjection() * transform3);
+		vao4->Draw();
 
-		shader->SetUniformMatrix("u_ModelViewProjection", camera->GetViewProjection()* transform3);
-		vao1->Bind();
-		glDrawArrays(GL_TRIANGLES, 0, 9);
 		VertexArrayObject::Unbind();
 
 		glfwSwapBuffers(window);
