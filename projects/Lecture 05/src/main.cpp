@@ -17,7 +17,7 @@ bool initGLFW() {
 	}
 
 	//Create a new GLFW window
-	window = glfwCreateWindow(800, 800, "INFR1350U", nullptr, nullptr);
+	window = glfwCreateWindow(800, 800, "Car (Carolyn) Wong - 100781520", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
 
 	return true;
@@ -82,13 +82,17 @@ bool loadShaders() {
 //// Lecture 04
 
 GLfloat rotY = 0.0f;
+GLfloat rotX = 0.0f;
 
 void keyboard() {
 	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-		rotY += 0.1f;
+		rotY += 1.0f;
 	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-		rotY -= 0.1f;
-
+		rotY -= 1.0f;
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+		rotX += 1.0f;
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+		rotX -= 1.0f;
 }
 
 ///////////////
@@ -124,25 +128,61 @@ int main() {
 		-0.5f, 0.5f, -0.5f, //5
 		-0.5f, -0.5f, 0.5f, //0
 		-0.5f, 0.5f, 0.5f,  //1
-		-0.5f, 0.5f, -0.5f //5
+		-0.5f, 0.5f, -0.5f, //5
+		-0.5f, -0.5f, -0.5f, // Back face
+		0.5f, -0.5f, -0.5f,
+		-0.5f, 0.5f, -0.5f,
+		0.5f, -0.5f, -0.5f,
+		0.5f, 0.5f, -0.5f,
+		-0.5f, 0.5f, -0.5f,
+		-0.5f, 0.5f, 0.5f, // Top face
+		-0.5f, 0.5f, -0.5f, 
+		0.5f, 0.5f, -0.5f,
+		0.5f, 0.5f, 0.5f,
+		0.5f, 0.5f, -0.5f,
+		-0.5f, 0.5f, 0.5f,
+		-0.5f, -0.5f, -0.5f, // Bottom face
+		-0.5f, -0.5f, 0.5f,
+		0.5f, -0.5f, 0.5f,
+		-0.5f, -0.5f, -0.5f,
+		0.5f, -0.5f, 0.5f,
+		0.5f, -0.5f, -0.5f,
 
 	};
 
 	// Color data
 	static const GLfloat colors[] = {
-		0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 1.0f,// front
 		0.0f, 0.0f, 1.0f,
 		0.0f, 0.0f, 1.0f,
 		1.0f, 0.0f, 0.0f,
 		1.0f, 0.0f, 0.0f,
 		1.0f, 0.0f, 0.0f,
-		0.0f, 1.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, //left
 		0.0f, 1.0f, 0.0f,
 		0.0f, 1.0f, 0.0f,
 		0.0f, 1.0f, 1.0f,
 		0.0f, 1.0f, 1.0f,
 		0.0f, 1.0f, 1.0f,
+		0.0f, 0.0f, 1.0f, //right
 		0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 1.0f,
+		1.0f, 0.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, //back
+		0.0f, 0.0f, 1.0f,
+		0.0f, 0.0f, 1.0f,
+		1.0f, 0.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+		1.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, // top
+		0.0f, 1.0f, 0.0f,
+		0.0f, 1.0f, 0.0f,
+		0.0f, 1.0f, 1.0f,
+		0.0f, 1.0f, 1.0f,
+		0.0f, 1.0f, 1.0f,
+		0.0f, 0.0f, 1.0f, //bot
 		0.0f, 0.0f, 1.0f,
 		0.0f, 0.0f, 1.0f,
 		1.0f, 0.0f, 0.0f,
@@ -170,7 +210,25 @@ int main() {
 		-1.0f, 0.0f, 0.0f,
 		-1.0f, 0.0f, 0.0f,
 		-1.0f, 0.0f, 0.0f,
-		-1.0f, 0.0f, 0.0f //left
+		-1.0f, 0.0f, 0.0f, //left
+		0.0f, 0.0f, -1.0f,
+		0.0f, 0.0f, -1.0f,
+		0.0f, 0.0f, -1.0f,
+		0.0f, 0.0f, -1.0f,
+		0.0f, 0.0f, -1.0f,
+		0.0f, 0.0f, -1.0f, //back
+		0.0f, 1.0f, 0.0f,
+		0.0f, 1.0f, 0.0f,
+		0.0f, 1.0f, 0.0f,
+		0.0f, 1.0f, 0.0f,
+		0.0f, 1.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, // top
+		0.0f, -1.0f, 0.0f,
+		0.0f, -1.0f, 0.0f,
+		0.0f, -1.0f, 0.0f,
+		0.0f, -1.0f, 0.0f,
+		0.0f, -1.0f, 0.0f,
+		0.0f, -1.0f, 0.0f, // bot
 	};
 
 	/// LECTURE 05
@@ -253,7 +311,7 @@ int main() {
 	// GL states
 	glEnable(GL_DEPTH_TEST);
 	// LEC 05
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 	//glFrontFace(GL_CCW);
 	//glCullFace(GL_FRONT); //GL_BACK, GL_FRONT_AND_BACK
 
@@ -276,6 +334,7 @@ int main() {
 
 		//Model = glm::translate(Model, glm::vec3(0.0f, 0.0f, movZ));
 		Model = glm::rotate(Model, glm::radians(rotY), glm::vec3(0.0f, 1.0f, 0.0f));
+		Model = glm::rotate(Model, glm::radians(rotX), glm::vec3(1.0f, 0.0f, 0.0f));
 		mvp = Projection * View * Model;
 		
 		// Send mvp to GPU
@@ -289,7 +348,7 @@ int main() {
 
 		/////////////////
 
-		glDrawArrays(GL_TRIANGLES, 0, 18);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		
 		glfwSwapBuffers(window);

@@ -46,9 +46,14 @@ VertexArrayObject::Sptr ObjLoader::LoadFromFile(const std::string& filename)
 	// TODO: Load data from file
 	std::vector<glm::vec3> positions;
 	std::vector<glm::ivec3> vertices;
+	std::vector<glm::vec3> normals;
+	std::vector<glm::vec2> UV;
 
 	glm::vec3 vecData;
 	glm::ivec3 vertexIndices;
+
+	glm::vec2 vecDataUV;
+	glm::vec3 vecDataNorm;
 
 	// Read and process the entire file
 	while (file.peek() != EOF) {
@@ -90,6 +95,17 @@ VertexArrayObject::Sptr ObjLoader::LoadFromFile(const std::string& filename)
 				// NOTE: This will create duplicate vertices! 
 				vertices.push_back(vertexIndices);    
 			}
+		
+		}
+		else if (command == "vn") // read the normals data from file
+		{
+			file >> vecDataNorm.x >> vecDataNorm.y >> vecDataNorm.z;
+			normals.push_back(vecDataNorm);
+		}
+		else if (command == "vt") // read the UV data from file
+		{
+			file >> vecDataUV.x >> vecDataUV.y;
+			UV.push_back(vecDataUV);
 		}
 	}
 

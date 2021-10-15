@@ -65,6 +65,11 @@ void Camera::SetOrthoVerticalScale(float value) {
 	__CalculateProjection();
 }
 
+void Camera::PlaneChange(float val1, float val2)
+{
+
+}
+
 const glm::mat4& Camera::GetViewProjection() const {
 	// TODO: Calculate and return view projection if dirty, otherwise return calculated value
 	if (_isDirty) 

@@ -64,6 +64,8 @@ public:
 	/// <param name="value">The new value for the ortho vertical scale</param>
 	void SetOrthoVerticalScale(float value);
 
+	void PlaneChange(float nearplane, float farplane);
+
 	/// <summary>
 	/// Gets the camera's position in world space
 	/// </summary>

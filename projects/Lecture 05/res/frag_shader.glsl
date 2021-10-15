@@ -32,8 +32,10 @@ void main() {
 	// Specular
 	float specularStrength = 1.0;
 	vec3 camDir = normalize(cameraPos - inPos);
+	vec3 halfwayDir = normalize(lightDir + camDir);
 	vec3 reflectedRay = reflect(-lightDir, N); // light direction to the point
-	float spec = pow(max(dot(camDir, reflectedRay), 0.0), 128); // shininess coeficient
+	//float spec = pow(max(dot(camDir, reflectedRay), 0.0), 128); // shininess coeficient
+	float spec = pow(max(dot(N,halfwayDir),0.0),128);
 	vec3 specular = specularStrength * spec * lightColor;
 
 

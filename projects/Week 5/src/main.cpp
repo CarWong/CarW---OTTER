@@ -187,11 +187,14 @@ int main() {
 	Camera::Sptr camera = Camera::Create();
 	camera->SetPosition(glm::vec3(0, 3, 3));
 	camera->LookAt(glm::vec3(0.0f));
+	camera->SetOrthoEnabled(false);
 
 	// Create a mat4 to store our mvp (for now)
 	glm::mat4 transform = glm::mat4(1.0f);
 	glm::mat4 transform2 = glm::mat4(1.0f);
 	glm::mat4 transform3 = glm::mat4(1.0f);
+	glm::mat4 transform4 = glm::mat4(1.0f);
+	glm::mat4 transform5 = glm::mat4(1.0f);
 
 	// Our high-precision timer
 	double lastFrame = glfwGetTime();
@@ -203,15 +206,44 @@ int main() {
 	MeshFactory::AddCube(mesh, glm::vec3(0.0f), glm::vec3(0.5f));
 	VertexArrayObject::Sptr vao3 = mesh.Bake();
 
-	VertexArrayObject::Sptr vao4 = ObjLoader::LoadFromFile("Monkey.obj");
+	VertexArrayObject::Sptr vao4 = ObjLoader::LoadFromFile("Monkey.obj"); // load the obj file
 
 	bool isRotating = true;
 
 	bool isButtonPressed = false;
 
+	bool ortho = false; // to initialize the orthographic camera
+
+	bool isSpacePressed = false; // to check if the space bar is pressed
+
 	///// Game loop /////
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
+
+		if (glfwGetKey(window, GLFW_KEY_SPACE)) //this checks if the space key is being pressed
+		{
+			if (!isSpacePressed) // if it is not pressed change the
+			{
+				ortho = !ortho; // switch the boolean value
+			}
+			isSpacePressed = true; // if space is pressed, then make sure that it's true
+		}
+		else
+		{
+			isSpacePressed = false; // if the button is not pressed, make sure that it's false
+		}
+
+		if (ortho == true)
+		{
+			camera->SetOrthoEnabled(true); // if orthographic is true, then set orthographic camera as enabled
+			camera->SetOrthoVerticalScale(4.0f); // change the ortho graphic scale so that the models will be shown
+			
+		}
+		else
+		{
+			camera->SetOrthoEnabled(false); // if the ortho camera is false, disable the othographic camera and go back to perspective
+			camera->SetPosition(glm::vec3(0, 3, 3));	
+		}
 
 		// WEEK 5: Input handling
 		if (glfwGetKey(window, GLFW_KEY_W)) 
@@ -239,7 +271,8 @@ int main() {
 			transform  = glm::rotate(glm::mat4(1.0f), static_cast<float>(thisFrame), glm::vec3(0, 0, 1));
 		}
 		transform2 = glm::rotate(glm::mat4(1.0f), -static_cast<float>(thisFrame), glm::vec3(0, 0, 1)) * glm::translate(glm::mat4(1.0f), glm::vec3(0, 0.0f, glm::sin(static_cast<float>(thisFrame))));
-		transform3 = glm::rotate(glm::mat4(1.0f), -static_cast<float>(thisFrame), glm::vec3(1, 0, 0)) * glm::translate(glm::mat4(1.0f), glm::vec3(0, glm::sin(static_cast<float>(thisFrame)), 0.0f));
+		transform3 = glm::rotate(glm::mat4(1.0f), -static_cast<float>(thisFrame), glm::vec3(1, 0, 0)) * glm::translate(glm::mat4(1.0f), glm::vec3(1.0f, 0.0f, glm::sin(static_cast<float>(thisFrame)))); // rotate the monkey
+		transform4 = glm::rotate(glm::mat4(1.0f), -static_cast<float>(thisFrame), glm::vec3(1, 0, 0)) * glm::translate(glm::mat4(1.0f), glm::vec3(-1.0f, 0.0f, glm::sin(static_cast<float>(thisFrame))));
 
 		// Clear the color and depth buffers
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -248,15 +281,18 @@ int main() {
 		shader->Bind();
 
 		// Draw spinny triangle
-		shader->SetUniformMatrix("u_ModelViewProjection", camera->GetViewProjection() * transform);
-		vao->Draw();
+		//shader->SetUniformMatrix("u_ModelViewProjection", camera->GetViewProjection() * transform);
+		//vao->Draw();
 
 		// Draw MeshFactory Sample
-		shader->SetUniformMatrix("u_ModelViewProjection", camera->GetViewProjection()* transform2);
-		vao3->Draw();
+		//shader->SetUniformMatrix("u_ModelViewProjection", camera->GetViewProjection()* transform2);
+		//vao3->Draw();
 
 		// Draw OBJ loaded model
 		shader->SetUniformMatrix("u_ModelViewProjection", camera->GetViewProjection() * transform3);
+		vao4->Draw();
+
+		shader->SetUniformMatrix("u_ModelViewProjection", camera->GetViewProjection() * transform4); // create another obj from the same file data
 		vao4->Draw();
 
 		VertexArrayObject::Unbind();
