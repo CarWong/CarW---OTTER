@@ -225,6 +225,7 @@ int main() {
 			if (!isSpacePressed) // if it is not pressed change the
 			{
 				ortho = !ortho; // switch the boolean value
+				std::cout << "help\n";
 			}
 			isSpacePressed = true; // if space is pressed, then make sure that it's true
 		}

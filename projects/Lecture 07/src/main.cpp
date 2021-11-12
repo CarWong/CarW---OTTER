@@ -6,11 +6,11 @@
 #include <GLM/glm.hpp> // Lec 04
 #include <GLM/gtc/matrix_transform.hpp> //lec 04
 
-// lec 7
-// load textures
-// load uvs into VBO, send to gpu
-// set up texture parameters
-// 
+// Lecture 07 ///////////////////
+// Load textures (images)
+// Load UVs into VBO, send to GPU
+// Set up texture parameters
+// Bind texture to use it, then draw the object
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -18,24 +18,19 @@
 unsigned char* image;
 int width, height;
 
-void loadImage(const std::string& filename)
-{
+void loadImage(const std::string& filename) {
 	int channels;
-	stbi_set_flip_vertically_on_load(true);
+	stbi_set_flip_vertically_on_load(true); //because opengl loads it flipped
 
-	//Load image
+	// Load image
 	image = stbi_load(filename.c_str(), &width, &height, &channels, 0);
 
 	if (image)
-	{
-		std::cout << "Image Loaded: " << width << " " << height << std::endl;
-		
-	}
-	else
-	{
-		std::cout << "Failed to load texture!!!!" << std::endl;
-	}
+		std::cout << "Image loaded: " << width << " x " << height << std::endl;
+	else std::cout << "Failed to load texture!!!!!" << std::endl;
+
 }
+
 
 GLFWwindow* window;
 
@@ -46,7 +41,7 @@ bool initGLFW() {
 	}
 
 	//Create a new GLFW window
-	window = glfwCreateWindow(800, 800, "INFR1350U", nullptr, nullptr);
+	window = glfwCreateWindow(800, 800, "Car Wong - 100781520", nullptr, nullptr);
 	glfwMakeContextCurrent(window);
 
 	return true;
@@ -111,12 +106,17 @@ bool loadShaders() {
 //// Lecture 04
 
 GLfloat rotY = 0.0f;
+GLfloat tranZ = 0.0f;
 
 void keyboard() {
 	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
 		rotY += 0.5f;
 	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
 		rotY -= 0.5f;
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+		tranZ += 0.1f;
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+		tranZ -= 0.1f;
 
 }
 
@@ -124,6 +124,7 @@ void keyboard() {
 
 
 int main() {
+
 	//Initialize GLFW
 	if (!initGLFW())
 		return 1;
@@ -202,30 +203,31 @@ int main() {
 		-1.0f, 0.0f, 0.0f //left
 	};
 
-	// lec 7
+	/////// LECTURE 07 /////////
 	static const GLfloat uv[] = {
 		0.0f, 0.0f,
-		1.0f, 0.0f,
-		0.0f, 1.0f,
-		1.0f, 0.0f,
-		1.0f, 1.0f,
-		0.0f, 1.0f,
+		0.5f, 0.0f,
+		0.0f, 0.5f,
+		0.5f, 0.0f,
+		0.5f, 0.5f,
+		0.0f, 0.5f,
 
-		0.0f, 0.0f,
-		1.0f, 0.0f,
-		0.0f, 1.0f,
-		1.0f, 0.0f,
+		0.5f, 0.5f,
+		1.0f, 0.5f,
+		0.5f, 1.0f,
+		1.0f, 0.5f,
 		1.0f, 1.0f,
-		0.0f, 1.0f,
+		0.5f, 1.0f,
 
-		0.0f, 0.0f,
-		1.0f, 0.0f,
-		0.0f, 1.0f,
-		1.0f, 0.0f,
+		0.5f, 0.5f,
+		1.0f, 0.5f,
+		0.5f, 1.0f,
+		1.0f, 0.5f,
 		1.0f, 1.0f,
-		0.0f, 1.0f,
+		0.5f, 1.0f
 
 	};
+
 
 	/// LECTURE 05
 	GLfloat cameraPos[] = { 0.0f, 0.0f, 3.0f };
@@ -267,6 +269,34 @@ int main() {
 	/// LEC 05
 	glEnableVertexAttribArray(2);//normals
 	////////////
+	
+	///////////// LETURE 07 ///////////////
+	GLuint uv_vbo = 3;
+	glGenBuffers(1, &uv_vbo);
+	glBindBuffer(GL_ARRAY_BUFFER, uv_vbo);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(uv), uv, GL_STATIC_DRAW);
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 0, NULL);
+	glEnableVertexAttribArray(3);
+
+	loadImage("arago.png");
+
+	GLuint textureHandle;
+	glGenTextures(1, &textureHandle);
+	glBindTexture(GL_TEXTURE_2D, textureHandle);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	
+	//glGenTextures(2, &textureHandle[1]);
+	//glBindTexture(GL_TEXTURE_2D, textureHandle[1]);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+
+	//Texture parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+	//free image space
+	stbi_image_free(image);
+
+	//////////////////////// 07
 
 	// Load our shaders
 
@@ -280,7 +310,7 @@ int main() {
 	glfwGetWindowSize(window, &width, &height);
 
 	glm::mat4 Projection = glm::perspective(glm::radians(45.0f),
-		(float)width / (float)height, 0.1f, 100.0f);
+		(float)width / (float)height, 0.001f, 100.0f);
 
 	// View matrix - Camera
 
@@ -292,7 +322,7 @@ int main() {
 
 	// Model matrix
 	glm::mat4 Model = glm::mat4(1.0f);//Identity matrix - resets your matrix
-
+	
 	glm::mat4 mvp;// = Projection * View * Model;
 
 	// Handle for our mvp
@@ -330,6 +360,7 @@ int main() {
 
 		//Model = glm::translate(Model, glm::vec3(0.0f, 0.0f, movZ));
 		Model = glm::rotate(Model, glm::radians(rotY), glm::vec3(0.0f, 1.0f, 0.0f));
+		Model = glm::translate(Model, glm::vec3(0.0f, 0.0f, tranZ));
 		mvp = Projection * View * Model;
 		
 		// Send mvp to GPU
@@ -342,9 +373,9 @@ int main() {
 		glUniform3fv(cameraPosID, 1, &cameraPos[0]);
 
 		/////////////////
-
-		glDrawArrays(GL_TRIANGLES, 0, 18); //36
-
+		//glBindTexture(GL_TEXTURE_2D, textureHandle[1]);
+		//glDrawArrays(GL_TRIANGLES, 0, 6);
+		glDrawArrays(GL_TRIANGLES, 0, 18);
 		
 		glfwSwapBuffers(window);
 	}

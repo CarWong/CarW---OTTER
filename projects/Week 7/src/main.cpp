@@ -594,7 +594,7 @@ int main() {
 		Guid monkeyMesh = ResourceManager::CreateMesh("Monkey.obj");
 		Guid boxTexture = ResourceManager::CreateTexture("textures/box-diffuse.png");
 		Guid monkeyTex  = ResourceManager::CreateTexture("textures/monkey-uvMap.png");
-		Guid anotherTex = ResourceManager::CreateTexture("textures/fish.png");
+		Guid anotherTex = ResourceManager::CreateTexture("textures/PINK.png");
 
 		// Save the asset manifest for all the resources we just loaded
 		ResourceManager::SaveManifest("manifest.json");
