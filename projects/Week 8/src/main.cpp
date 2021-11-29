@@ -257,7 +257,7 @@ int main() {
 		// Create our OpenGL resources
 		Shader::Sptr uboShader = ResourceManager::CreateAsset<Shader>(std::unordered_map<ShaderPartType, std::string>{
 			{ ShaderPartType::Vertex, "shaders/vertex_shader.glsl" }, 
-			{ ShaderPartType::Fragment, "shaders/frag_blinn_phong_textured.glsl" }
+			{ ShaderPartType::Fragment, "shaders/frag_shader.glsl" }
 		}); 
 
 		MeshResource::Sptr monkeyMesh = ResourceManager::CreateAsset<MeshResource>("Monkey.obj");

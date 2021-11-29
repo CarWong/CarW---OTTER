@@ -24,7 +24,7 @@ void loadImage(const std::string& filename) { // pass the filepath string as an 
 	if (image)
 		std::cout << "Image loaded: " << width << " x " << height << std::endl;
 	else std::cout << "FAiled to load image!!!" << std::endl;
-
+	
 }
 
 bool initGLFW() {
@@ -374,6 +374,9 @@ int main() {
 
 	// Enable depth buffer
 	glEnable(GL_DEPTH_TEST);
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	/////// TEXTURE
 	glUniform1i(glGetUniformLocation(shader_program, "myTextureSampler"), 0);

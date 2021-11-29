@@ -1,38 +1,24 @@
 #version 410
+layout(location = 0) in vec3 vertex_pos;
+layout(location = 1) in vec3 vertex_color;
+layout(location = 2) in vec3 vertex_normal;
+layout(location = 3) in vec2 vertex_uv;
 
-layout(location = 0) in vec3 inPosition;
-layout(location = 1) in vec3 inColor;
-layout(location = 2) in vec3 inNormal;
-layout(location = 3) in vec2 inUV;
+uniform mat4 Model, View, Projection;
+out vec3 color;
+out vec2 texUV;
+out vec3 world_normal;
+out vec3 world_pos;
 
-layout(location = 0) out vec3 outWorldPos;
-layout(location = 1) out vec3 outColor;
-layout(location = 2) out vec3 outNormal;
-layout(location = 3) out vec2 outUV;
-
-// Complete MVP
-uniform mat4 u_ModelViewProjection;
-// Just the model transform, we'll do worldspace lighting
-uniform mat4 u_Model;
-// Normal Matrix for transforming normals
-uniform mat3 u_NormalMatrix;
+//uniform mat4 MVP;
 
 void main() {
 
-	gl_Position = u_ModelViewProjection * vec4(inPosition, 1.0);
+	world_normal = normalize(mat3(Model) * vertex_normal);
+	world_pos = mat3(Model) * vertex_pos;
+	color = vertex_color;
 
-	// Lecture 5
-	// Pass vertex pos in world space to frag shader
-	outWorldPos = (u_Model * vec4(inPosition, 1.0)).xyz;
-
-	// Normals
-	outNormal = u_NormalMatrix * inNormal;
-
-	// Pass our UV coords to the fragment shader
-	outUV = inUV;
-
-	///////////
-	outColor = inColor;
-
+	gl_Position = Projection * View * Model * vec4(vertex_pos, 1.0);
+	texUV = vertex_uv;
 }
-
+	
